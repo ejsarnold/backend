@@ -22,10 +22,13 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    username: {
+    first_name: {
       type: "string",
       notNull: true,
-      unique: true,
+    },
+    last_name: {
+      type: "string",
+      notNull: true,
     },
     password: {
       type: "string",
@@ -44,11 +47,15 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    method: {
+      type:'string',
+      notNull: true,
+    },
     is_active: {
       type: "boolean",
       defaultValue: true,
     },
-    firebase_player_id: {
+    device_id: {
       type:'string',
       null: true
     },

@@ -29,7 +29,8 @@
     "fastify-cli": "^5.8.0",
     "fastify-plugin": "^4.0.0",
     "pg": "^8.13.0",
-    "prisma": "^5.20.0"
+    "prisma": "^5.20.0",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "tap": "^16.1.0"
