@@ -13,17 +13,71 @@ model migrations {
   run_on DateTime @db.Timestamp(6)
 }
 
+model otps {
+  id           Int       @id @default(autoincrement())
+  email        String?   @db.VarChar
+  phone_number String?   @db.VarChar
+  code         String    @db.VarChar
+  purpose      String    @db.VarChar
+  created_at   DateTime? @db.Timestamptz(6)
+  modified_at  DateTime? @db.Timestamptz(6)
+  deleted_at   DateTime? @db.Timestamptz(6)
+}
+
+model roles {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar
+  created_at  DateTime? @db.Timestamptz(6)
+  modified_at DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+  users       users[]
+}
+
+model seeds {
+  id          Int       @id @default(autoincrement())
+  model       String?   @db.VarChar
+  model_id    Int?
+  created_at  DateTime? @db.Timestamptz(6)
+  modified_at DateTime? @db.Timestamptz(6)
+  deleted_at  DateTime? @db.Timestamptz(6)
+
+  @@unique([model, model_id], map: "Index_seeds_model_model_id")
+}
+
+model user_preferences {
+  id            Int       @id @default(autoincrement())
+  user_id       Int       @unique
+  is_subscribed Boolean?  @default(false)
+  theme         String    @default("light") @db.VarChar
+  language      String    @default("en") @db.VarChar
+  created_at    DateTime? @db.Timestamptz(6)
+  modified_at   DateTime? @db.Timestamptz(6)
+  deleted_at    DateTime? @db.Timestamptz(6)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "user_preferences_users_user_id_foreign")
+}
+
 model users {
-  id                 Int       @id @default(autoincrement())
-  username           String    @unique @db.VarChar
-  password           String?   @db.VarChar
-  phone_number       String    @unique @db.VarChar
-  email              String    @unique @db.VarChar
-  country_code       String    @db.VarChar
-  is_active          Boolean?  @default(true)
-  firebase_player_id String?   @db.VarChar
-  last_login_at      DateTime? @db.Timestamptz(6)
-  created_at         DateTime? @db.Timestamptz(6)
-  modified_at        DateTime? @db.Timestamptz(6)
-  deleted_at         DateTime? @db.Timestamptz(6)
+  id                       Int               @id @default(autoincrement())
+  first_name               String            @db.VarChar
+  last_name                String            @db.VarChar
+  role_id                  Int
+  password                 String?           @db.VarChar
+  phone_number             String?           @db.VarChar
+  email                    String            @unique @db.VarChar
+  country_code             String?           @db.VarChar
+  method                   String            @db.VarChar
+  key                      String            @db.VarChar
+  status                   String?           @default("Online") @db.VarChar
+  is_active                Boolean?          @default(true)
+  device_id                String?
+  profile_picture_url      String?
+  last_login_at            DateTime?         @db.Timestamptz(6)
+  last_seen_at             DateTime?         @db.Timestamptz(6)
+  phone_number_verified_at DateTime?         @db.Timestamptz(6)
+  email_verified_at        DateTime?         @db.Timestamptz(6)
+  created_at               DateTime?         @db.Timestamptz(6)
+  modified_at              DateTime?         @db.Timestamptz(6)
+  deleted_at               DateTime?         @db.Timestamptz(6)
+  user_preferences         user_preferences?
+  roles                    roles             @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "users_roles_role_id_foreign")
 }

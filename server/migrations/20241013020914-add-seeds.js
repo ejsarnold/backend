@@ -15,7 +15,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.createTable("otps", {
+  return db.createTable("seeds", {
     id: {
       type: "int",
       unsigned: true,
@@ -23,19 +23,11 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    email: {
+    model: {
       type: "string",
     },
-    phone_number: {
-      type: "string",
-    },
-    code: {
-      type: "string",
-      notNull: true,
-    },
-    purpose: {
-      type:'string',
-      notNull: true,
+    model_id: {
+      type: "int",
     },
     created_at: {
       type: "timestamp",
@@ -56,7 +48,7 @@ exports.up = function (db) {
 };
 
 exports.down = function (db) {
-  return db.dropTable("otps");
+  return db.dropTable("seeds");
 };
 
 exports._meta = {

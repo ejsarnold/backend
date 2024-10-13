@@ -30,13 +30,27 @@ exports.up = function (db) {
       type: "string",
       notNull: true,
     },
+    role_id: {
+      type: "int",
+      unsigned: true,
+      notNull: true,
+      foreignKey: {
+        name: "users_roles_role_id_foreign",
+        table: "roles",
+        rules: {
+          onDelete: "CASCADE",
+          onUpdate: "RESTRICT",
+        },
+        mapping: "id",
+      },
+    },
     password: {
       type: "string",
+      null: true
     },
     phone_number: {
       type: "string",
-      notNull: true,
-      unique: true,
+      null: true,
     },
     email: {
       type: "string",
@@ -45,21 +59,48 @@ exports.up = function (db) {
     },
     country_code: {
       type: "string",
-      notNull: true,
+      null: true,
     },
     method: {
       type:'string',
       notNull: true,
+    },
+    key: {
+      type:'string',
+      notNull: true,
+    },
+    status: {
+      type:'string',
+      defaultValue: 'Online',
     },
     is_active: {
       type: "boolean",
       defaultValue: true,
     },
     device_id: {
-      type:'string',
+      type:'text',
+      null: true
+    },
+    profile_picture_url : {
+      type:'text',
       null: true
     },
     last_login_at: {
+      type: "timestamp",
+      timezone: true,
+      null: true,
+    },
+    last_seen_at: {
+      type: "timestamp",
+      timezone: true,
+      null: true,
+    },
+    phone_number_verified_at: {
+      type: "timestamp",
+      timezone: true,
+      null: true,
+    },
+    email_verified_at: {
       type: "timestamp",
       timezone: true,
       null: true,

@@ -1,5 +1,4 @@
 "use strict";
-
 var dbm;
 var type;
 var seed;
@@ -15,7 +14,7 @@ exports.setup = function (options, seedLink) {
 };
 
 exports.up = function (db) {
-  return db.createTable("otps", {
+  return db.createTable("user_preferences", {
     id: {
       type: "int",
       unsigned: true,
@@ -23,19 +22,34 @@ exports.up = function (db) {
       primaryKey: true,
       autoIncrement: true,
     },
-    email: {
-      type: "string",
+    user_id: {
+      type: "int",
+      unsigned: true,
+      notNull: true,
+      unique: true,
+      foreignKey: {
+        name: "user_preferences_users_user_id_foreign",
+        table: "users",
+        rules: {
+          onDelete: "CASCADE",
+          onUpdate: "RESTRICT",
+        },
+        mapping: "id",
+      },
     },
-    phone_number: {
-      type: "string",
+    is_subscribed: {
+      type: "boolean",
+      defaultValue: false,
     },
-    code: {
+    theme: {
       type: "string",
       notNull: true,
+      defaultValue: "light",
     },
-    purpose: {
-      type:'string',
+    language: {
+      type: "string",
       notNull: true,
+      defaultValue: "en",
     },
     created_at: {
       type: "timestamp",
@@ -56,7 +70,7 @@ exports.up = function (db) {
 };
 
 exports.down = function (db) {
-  return db.dropTable("otps");
+  return db.dropTable("user_preferences");
 };
 
 exports._meta = {
