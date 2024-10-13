@@ -18,11 +18,16 @@ module.exports = async function (fastify, opts) {
         },
         body: {
           type: "object",
-          required: ["email"],
+          required: ["email", "purpose"],
+          description:
+            "The purpose could be 'account_register' or 'reset_password'",
           properties: {
             email: {
               type: "string",
               format: "email",
+            },
+            purpose: {
+              type: "string",
             },
           },
         },
@@ -44,17 +49,22 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        if (user) {
+        if (user && request.body.purpose == "account_register") {
           return reply.status(409).send({
             error: "EmailAlreadyRegistered",
             message: "This email is already registered.",
+          });
+        } else if (!user && request.body.purpose == "reset_password") {
+          return reply.status(404).send({
+            error: "AccountNotFound",
+            message: "This email is not registered.",
           });
         }
 
         const otps = await fastify.prisma.otps.findMany({
           where: {
             email: request.body.email,
-            purpose: "account_register",
+            purpose: request.body.purpose,
             created_at: {
               gte: moment().subtract(2, "hours").toISOString(),
             },
@@ -80,7 +90,7 @@ module.exports = async function (fastify, opts) {
         await fastify.prisma.otps.create({
           data: {
             email: request.body.email,
-            purpose: "account_register",
+            purpose: request.body.purpose,
             code: "123456",
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
@@ -117,7 +127,9 @@ module.exports = async function (fastify, opts) {
         },
         body: {
           type: "object",
-          required: ["email", "otp"],
+          required: ["email", "otp", "purpose"],
+          description:
+            "The purpose could be 'account_register' or 'reset_password'",
           properties: {
             email: {
               type: "string",
@@ -129,6 +141,9 @@ module.exports = async function (fastify, opts) {
               maxLength: 6,
               pattern: "^[0-9]{6}$",
             },
+            purpose: {
+              type: "string",
+            },
           },
         },
       },
@@ -138,7 +153,7 @@ module.exports = async function (fastify, opts) {
         const otp = await fastify.prisma.otps.findFirst({
           where: {
             email: request.body.email,
-            purpose: "account_register",
+            purpose: request.body.purpose,
           },
           select: {
             id: true,
@@ -164,12 +179,12 @@ module.exports = async function (fastify, opts) {
             message: "The OTP has expired, please request a new one.",
           });
         }
-        await fastify.prisma.otps.deleteMany({
-          where: {
-            email: request.body.email,
-            purpose: "account_register",
-          },
-        });
+        // await fastify.prisma.otps.deleteMany({
+        //   where: {
+        //     email: request.body.email,
+        //      purpose: request.body.purpose,
+        //   },
+        // });
         var resp = {};
         resp.is_otp_valid = true;
         //
@@ -202,11 +217,16 @@ module.exports = async function (fastify, opts) {
         },
         body: {
           type: "object",
-          required: ["phone_number"],
+          required: ["phone_number", "purpose"],
+          description:
+            "The purpose could be 'account_register' or 'reset_password'",
           properties: {
             phone_number: {
               type: "string",
               pattern: "^[+][0-9]{10,15}$",
+            },
+            purpose: {
+              type: "string",
             },
           },
         },
@@ -228,17 +248,22 @@ module.exports = async function (fastify, opts) {
           },
         });
 
-        if (user) {
+        if (user && request.body.purpose == "account_register") {
           return reply.status(409).send({
             error: "PhoneNumberAlreadyRegistered",
             message: "This phone number is already registered.",
+          });
+        } else if (!user && request.body.purpose == "reset_password") {
+          return reply.status(404).send({
+            error: "AccountNotFound",
+            message: "This phone number is not registered.",
           });
         }
 
         const otps = await fastify.prisma.otps.findMany({
           where: {
             phone_number: request.body.phone_number,
-            purpose: "account_register",
+            purpose: request.body.purpose,
             created_at: {
               gte: moment().subtract(2, "hours").toISOString(),
             },
@@ -264,7 +289,7 @@ module.exports = async function (fastify, opts) {
         await fastify.prisma.otps.create({
           data: {
             phone_number: request.body.phone_number,
-            purpose: "account_register",
+            purpose: request.body.purpose,
             code: "123456",
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
@@ -301,7 +326,9 @@ module.exports = async function (fastify, opts) {
         },
         body: {
           type: "object",
-          required: ["phone_number", "otp"],
+          required: ["phone_number", "otp", "purpose"],
+          description:
+            "The purpose could be 'account_register' or 'reset_password'",
           properties: {
             phone_number: {
               type: "string",
@@ -313,6 +340,9 @@ module.exports = async function (fastify, opts) {
               maxLength: 6,
               pattern: "^[0-9]{6}$",
             },
+            purpose: {
+              type: "string",
+            },
           },
         },
       },
@@ -322,7 +352,7 @@ module.exports = async function (fastify, opts) {
         const otp = await fastify.prisma.otps.findFirst({
           where: {
             phone_number: request.body.phone_number,
-            purpose: "account_register",
+            purpose: request.body.purpose,
           },
           select: {
             id: true,
@@ -348,12 +378,12 @@ module.exports = async function (fastify, opts) {
             message: "The OTP has expired, please request a new one.",
           });
         }
-        await fastify.prisma.otps.deleteMany({
-          where: {
-            phone_number: request.body.phone_number,
-            purpose: "account_register",
-          },
-        });
+        // await fastify.prisma.otps.deleteMany({
+        //   where: {
+        //     phone_number: request.body.phone_number,
+        //     purpose: request.body.purpose,
+        //   },
+        // });
         var resp = {};
         resp.is_otp_valid = true;
         //
@@ -388,6 +418,7 @@ module.exports = async function (fastify, opts) {
           type: "object",
           required: [
             "email",
+            "email_otp",
             "first_name",
             "last_name",
             "password",
@@ -400,6 +431,12 @@ module.exports = async function (fastify, opts) {
             email: {
               type: "string",
               format: "email",
+            },
+            email_otp: {
+              type: "string",
+              minLength: 6,
+              maxLength: 6,
+              pattern: "^[0-9]{6}$",
             },
             phone_number: {
               type: "string",
@@ -438,6 +475,28 @@ module.exports = async function (fastify, opts) {
     },
     async (request, reply) => {
       try {
+        const otp = await fastify.prisma.otps.findFirst({
+          where: {
+            email: request.body.email,
+            purpose: "account_register",
+          },
+          select: {
+            id: true,
+            code: true,
+            email: true,
+            created_at: true,
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+          take: 1,
+        });
+        if (!otp || otp.code != request.body.email_otp) {
+          return reply.status(400).send({
+            error: "InvalidOTPError",
+            message: "The provided OTP is invalid.",
+          });
+        }
         const user_email = await fastify.prisma.users.findFirst({
           where: {
             email: request.body.email,
@@ -490,22 +549,28 @@ module.exports = async function (fastify, opts) {
             password: password,
             method: request.body.method,
             key: request.body.key,
-            profile_picture_url: request.body.profile_picture_url,
+            profile_picture_url: request.body.profile_picture_url || null,
             role_id: 2,
-            last_login_at:  moment().toISOString(),
-            email_verified_at:  moment().toISOString(),
-            phone_number_verified_at: request.body.phone_number? moment().toISOString(): null,
+            last_login_at: moment().toISOString(),
+            email_verified_at: moment().toISOString(),
+            phone_number_verified_at: request.body.phone_number
+              ? moment().toISOString()
+              : null,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
           select: {
             id: true,
             phone_number: true,
+            first_name: true,
+            last_name: true,
             email: true,
+            password: true,
             country_code: true,
             is_active: true,
             deleted_at: true,
             roles: true,
+            profile_picture_url: true,
           },
         });
         const user_preference = await fastify.prisma.user_preferences.create({
@@ -516,24 +581,25 @@ module.exports = async function (fastify, opts) {
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
-          select:{
+          select: {
             is_subscribed: true,
-            language : true,
-            theme: true
-          }
+            language: true,
+            theme: true,
+          },
         });
 
-        let res = {}
-        res.id = user.id
-        res.email = user.email
-        res.role = user.roles.name
-        const token = fastify.jwt.sign(res)
+        let res = {};
+        res.id = user.id;
+        res.email = user.email;
+        res.role = user.roles.name;
+        const token = fastify.jwt.sign(res);
 
-        res.first_name = user.first_name
-        res.last_name = user.last_name
-        res.email = user.email
-        res.token = token
-        res.user_preferences = user_preference
+        res.first_name = user.first_name;
+        res.last_name = user.last_name;
+        res.email = user.email;
+        res.profile_picture_url = user.profile_picture_url;
+        res.token = token;
+        res.user_preferences = user_preference;
 
         reply.send(res);
       } catch (error) {
@@ -547,4 +613,373 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+
+  fastify.post(
+    "/login",
+    {
+      schema: {
+        tags: ["Auth"],
+        params: {
+          type: "object",
+          properties: {
+            lang: {
+              type: "string",
+              default: "en",
+            },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["email", "password"],
+          properties: {
+            email: {
+              type: "string",
+              format: "email",
+            },
+            password: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const user = await fastify.prisma.users.findUnique({
+          where: {
+            email: request.body.email,
+          },
+          select: {
+            id: true,
+            phone_number: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            password: true,
+            country_code: true,
+            is_active: true,
+            profile_picture_url: true,
+            deleted_at: true,
+            roles: true,
+            user_preferences: {
+              select: {
+                is_subscribed: true,
+                language: true,
+                theme: true,
+              },
+            },
+          },
+        });
+
+        if (!user) {
+          return reply.status(400).send({
+            error: "InvalidCredentials",
+            message: "Email or password is incorrect.",
+          });
+        }
+
+        if (!user.is_active) {
+          return reply.status(403).send({
+            error: "AccountDeactivated",
+            message: "Your account is deactivated.",
+          });
+        }
+
+        if (user.deleted_at) {
+          return reply.status(410).send({
+            error: "AccountDeleted",
+            message: "Your account is deleted.",
+          });
+        }
+        const validation = await fastify.bcrypt.compare(
+          request.body.password,
+          user.password
+        );
+
+        if (!validation) {
+          return reply.status(400).send({
+            error: "InvalidCredentials",
+            message: "Email or password is incorrect.",
+          });
+        }
+
+        let res = {};
+        res.id = user.id;
+        res.email = user.email;
+        res.role = user.roles.name;
+        const token = fastify.jwt.sign(res);
+
+        res.first_name = user.first_name;
+        res.last_name = user.last_name;
+        res.email = user.email;
+        res.profile_picture_url = user.profile_picture_url;
+        res.token = token;
+        res.user_preferences = user.user_preferences;
+
+        reply.send(res);
+      } catch (error) {
+        console.error(error);
+        reply.status(500).send({
+          error: "InternalServerError",
+          message: "An error occurred.",
+        });
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  fastify.post(
+    "/reset-password",
+    {
+      schema: {
+        tags: ["Auth"],
+        params: {
+          type: "object",
+          properties: {
+            lang: {
+              type: "string",
+              default: "en",
+            },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["identifier", "method", "otp", "new_password"],
+          description:
+            "The identifier could be an email or a phone number.\nThe method could be 'email','mobile'",
+          properties: {
+            identifier: {
+              type: "string",
+            },
+            method: {
+              type: "string",
+            },
+            otp: {
+              type: "string",
+              minLength: 6,
+              maxLength: 6,
+              pattern: "^[0-9]{6}$",
+            },
+            new_password: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        let where = {};
+        if (request.body.method == "mobile") {
+          where = {
+            phone_number: request.body.identifier,
+            purpose: "reset_password",
+          };
+        } else {
+          where = {
+            email: request.body.identifier,
+            purpose: "reset_password",
+          };
+        }
+        const otp = await fastify.prisma.otps.findFirst({
+          where: where,
+          select: {
+            id: true,
+            code: true,
+            email: true,
+            created_at: true,
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+          take: 1,
+        });
+        if (!otp || otp.code != request.body.otp) {
+          return reply.status(400).send({
+            error: "InvalidOTPError",
+            message: "The provided OTP is invalid.",
+          });
+        }
+        delete where.purpose;
+        const user = await fastify.prisma.users.findFirst({
+          where: where,
+          select: {
+            id: true,
+            phone_number: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            password: true,
+            country_code: true,
+            is_active: true,
+            profile_picture_url: true,
+            deleted_at: true,
+            roles: true,
+            user_preferences: {
+              select: {
+                is_subscribed: true,
+                language: true,
+                theme: true,
+              },
+            },
+          },
+        });
+
+        if (!user.is_active) {
+          return reply.status(403).send({
+            error: "AccountDeactivated",
+            message: "Your account is deactivated.",
+          });
+        }
+
+        if (user.deleted_at) {
+          return reply.status(410).send({
+            error: "AccountDeleted",
+            message: "Your account is deleted.",
+          });
+        }
+
+        let password = await fastify.bcrypt.hash(request.body.new_password);
+        await fastify.prisma.users.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            password: password,
+            modified_at: moment().toISOString(),
+          }
+        });
+        reply.send({ message: "Password reset successfully." });
+      } catch (error) {
+        console.error(error);
+        reply.status(500).send({
+          error: "InternalServerError",
+          message: "An error occurred.",
+        });
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
+
+  // fastify.post(
+  //   "/social-login",
+  //   {
+  //     schema: {
+  //       tags: ["Auth"],
+  //       params: {
+  //         type: "object",
+  //         properties: {
+  //           lang: {
+  //             type: "string",
+  //             default: "en",
+  //           },
+  //         },
+  //       },
+  //       body: {
+  //         type: "object",
+  //         description: "The method used for authentication, e.g., 'email', 'google', 'apple'.",
+  //         required: [
+  //           "email",
+  //           "key",
+  //           "method"
+  //         ],
+  //         properties: {
+  //           email: {
+  //             type: "string",
+  //             format: "email",
+  //           },
+  //           key: {
+  //             type: "string",
+  //           },
+  //           method: {
+  //             type: "string",
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  //   async (request, reply) => {
+  //     try {
+  //       const user = await fastify.prisma.users.findUnique({
+  //         where: {
+  //           email: request.body.email,
+  //         },
+  //         select: {
+  //           id: true,
+  //           phone_number: true,
+  //           first_name : true,
+  //           last_name: true,
+  //           email: true,
+  //           password : true,
+  //           country_code: true,
+  //           is_active: true,
+  //           profile_picture_url: true,
+  //           deleted_at: true,
+  //           roles: true,
+  //           user_preferences: {
+  //             select:{
+  //               is_subscribed: true,
+  //               language : true,
+  //               theme: true
+  //             }
+  //           },
+  //         },
+  //       });
+
+  //       if (!user) {
+  //         return reply.status(400).send({
+  //           error: "InvalidCredentials",
+  //           message: "Email or password is incorrect.",
+  //         });
+  //       }
+
+  //       if (!user.is_active) {
+  //         return reply.status(403).send({
+  //           error: "AccountDeactivated",
+  //           message: "Your account is deactivated.",
+  //         });
+  //       }
+
+  //       if (user.deleted_at) {
+  //         return reply.status(410).send({
+  //           error: "AccountDeleted",
+  //           message: "Your account is deleted.",
+  //         })
+  //       }
+  //       const validation = await fastify.bcrypt.compare(request.body.password, user.password)
+
+  //       if (!validation) {
+  //         return reply.status(400).send({
+  //           error: "InvalidCredentials",
+  //           message: "Mobile number or username is incorrect.",
+  //         });
+  //       }
+
+  //       let res = {}
+  //       res.id = user.id
+  //       res.email = user.email
+  //       res.role = user.roles.name
+  //       const token = fastify.jwt.sign(res)
+
+  //       res.first_name = user.first_name
+  //       res.last_name = user.last_name
+  //       res.email = user.email
+  //       res.profile_picture_url = user.profile_picture_url
+  //       res.token = token
+  //       res.user_preferences = user.user_preferences
+
+  //       reply.send(res);
+  //     } catch (error) {
+  //       console.error(error);
+  //       reply.status(500).send({
+  //         error: "InternalServerError",
+  //         message: "An error occurred.",
+  //       });
+  //     } finally {
+  //       await fastify.prisma.$disconnect();
+  //     }
+  //   }
+  // );
 };

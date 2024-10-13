@@ -29,9 +29,7 @@ yarn run dev
 
 ## Swagger
 1. Seed the database via App Swagger
-2. Try login as a Maintainer via http://localhost:3000/api/v1/{lang}/maintainer/login
-3. Try authorize via token
-4. Try to retrieve data via http://localhost:3000/api/v1/{lang}/maintainer/bread/maintainer
+2. Try authorize via token
 
 ## If Created New Migration
 1. Execute it

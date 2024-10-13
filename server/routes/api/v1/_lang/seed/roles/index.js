@@ -6,6 +6,15 @@ module.exports = async function (fastify, opts) {
     {
       schema: {
         tags: ["Seed"],
+        params: {
+          type: "object",
+          properties: {
+            lang: {
+              type: "string",
+              default: "en",
+            },
+          },
+        },
       },
     },
     async (request, reply) => {

@@ -6,7 +6,10 @@
     "port":{ "ENV" : "DB_PORT" },
     "database":{ "ENV" : "DB_DATABASE" },
     "user":{ "ENV" : "DB_USERNAME" },
-    "password":{ "ENV" : "DB_PASSWORD" }
+    "password":{ "ENV" : "DB_PASSWORD" },
+    "ssl": {
+      "rejectUnauthorized": false
+    }
   },
   "prod":{
     "driver":"pg",
