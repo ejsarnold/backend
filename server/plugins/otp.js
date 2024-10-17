@@ -18,8 +18,8 @@ module.exports = fp(async function (fastify, opts) {
         code +
         ". Only valid for 5 mins.";
 
-      // let sms = {phone_number:params.phone_number, email: params.email,messaging_option:params.messaging_option,subject:`Login OTP`,message:message}
-      // await fastify.sms.send(fastify, sms);
+       let sms = {phone_number:params.phone_number, email: params.email,messaging_option:params.messaging_option,subject:`OTP`,message:message}
+      await fastify.sms.send(fastify, sms);
       return { message: "Success!" };
     },
   };

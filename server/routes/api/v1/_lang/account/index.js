@@ -87,11 +87,22 @@ module.exports = async function (fastify, opts) {
         console.log("Generated OTP:", code);
         // EOC
 
+        //BOC: send OTP
+        await fastify.otp.send(
+          fastify,
+          {
+            email: request.body.email,
+            messaging_option: "email",
+          },
+          code
+        );
+        //EOC
+
         await fastify.prisma.otps.create({
           data: {
             email: request.body.email,
             purpose: request.body.purpose,
-            code: "123456",
+            code: code,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
@@ -285,6 +296,28 @@ module.exports = async function (fastify, opts) {
         const code = await fastify.otp.generateOtp(6);
         console.log("Generated OTP:", code);
         // EOC
+
+        //BOC: send OTP
+        //  await fastify.otp.send(
+        //   fastify,
+        //   {
+        //     phone_number: request.body.phone_number,
+        //     messaging_option: 'mobile',
+        //   },
+        //   code
+        // );
+        //EOC
+
+        // const ret = await fastify.uniClient.messages.send({
+        //   to: request.body.phone_number,
+        //  // signature: 'Unimatrix',
+        //   templateId: 'pub_otp_en_ttl3',
+        //   templateData: {
+        //     code: '2048',
+        //     ttl:'5'
+        //   }
+        // });
+        // console.log('hiii',ret)
 
         await fastify.prisma.otps.create({
           data: {
@@ -848,7 +881,7 @@ module.exports = async function (fastify, opts) {
           data: {
             password: password,
             modified_at: moment().toISOString(),
-          }
+          },
         });
         reply.send({ message: "Password reset successfully." });
       } catch (error) {
@@ -863,123 +896,162 @@ module.exports = async function (fastify, opts) {
     }
   );
 
-  // fastify.post(
-  //   "/social-login",
-  //   {
-  //     schema: {
-  //       tags: ["Auth"],
-  //       params: {
-  //         type: "object",
-  //         properties: {
-  //           lang: {
-  //             type: "string",
-  //             default: "en",
-  //           },
-  //         },
-  //       },
-  //       body: {
-  //         type: "object",
-  //         description: "The method used for authentication, e.g., 'email', 'google', 'apple'.",
-  //         required: [
-  //           "email",
-  //           "key",
-  //           "method"
-  //         ],
-  //         properties: {
-  //           email: {
-  //             type: "string",
-  //             format: "email",
-  //           },
-  //           key: {
-  //             type: "string",
-  //           },
-  //           method: {
-  //             type: "string",
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  //   async (request, reply) => {
-  //     try {
-  //       const user = await fastify.prisma.users.findUnique({
-  //         where: {
-  //           email: request.body.email,
-  //         },
-  //         select: {
-  //           id: true,
-  //           phone_number: true,
-  //           first_name : true,
-  //           last_name: true,
-  //           email: true,
-  //           password : true,
-  //           country_code: true,
-  //           is_active: true,
-  //           profile_picture_url: true,
-  //           deleted_at: true,
-  //           roles: true,
-  //           user_preferences: {
-  //             select:{
-  //               is_subscribed: true,
-  //               language : true,
-  //               theme: true
-  //             }
-  //           },
-  //         },
-  //       });
+  fastify.post(
+    "/social-login",
+    {
+      schema: {
+        tags: ["Auth"],
+        params: {
+          type: "object",
+          properties: {
+            lang: {
+              type: "string",
+              default: "en",
+            },
+          },
+        },
+        body: {
+          type: "object",
+          description:
+            "The method used for authentication, e.g., 'email', 'google', 'apple'.",
+          required: ["key", "method"],
+          properties: {
+            key: {
+              type: "string",
+            },
+            method: {
+              type: "string",
+            },
+            email: {
+              type: "string",
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        let user;
+        user = await fastify.prisma.users.findFirst({
+          where: {
+            key: request.body.key,
+            method: request.body.method,
+          },
+          select: {
+            id: true,
+            phone_number: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            password: true,
+            country_code: true,
+            is_active: true,
+            profile_picture_url: true,
+            deleted_at: true,
+            roles: true,
+            user_preferences: {
+              select: {
+                is_subscribed: true,
+                language: true,
+                theme: true,
+              },
+            },
+          },
+        });
 
-  //       if (!user) {
-  //         return reply.status(400).send({
-  //           error: "InvalidCredentials",
-  //           message: "Email or password is incorrect.",
-  //         });
-  //       }
+        if (request.body.email) {
+          user = await fastify.prisma.users.findFirst({
+            where: {
+              email: request.body.email,
+            },
+            select: {
+              id: true,
+              phone_number: true,
+              first_name: true,
+              last_name: true,
+              email: true,
+              password: true,
+              country_code: true,
+              is_active: true,
+              profile_picture_url: true,
+              deleted_at: true,
+              roles: true,
+              user_preferences: {
+                select: {
+                  is_subscribed: true,
+                  language: true,
+                  theme: true,
+                },
+              },
+            },
+          });
 
-  //       if (!user.is_active) {
-  //         return reply.status(403).send({
-  //           error: "AccountDeactivated",
-  //           message: "Your account is deactivated.",
-  //         });
-  //       }
+          if (request.body.type !== user.type) {
+            if (user.type === "google") {
+              return reply.status(403).send({
+                error: "AccountTypeMismatch",
+                message:
+                  "You already have an account set up using Google. Please try signing in with Google.",
+              });
+            } else if (user.type === "apple") {
+              return reply.status(403).send({
+                error: "AccountTypeMismatch",
+                message:
+                  "You already have an account set up using Apple. Please try signing in with Apple.",
+              });
+            } else if (user.type === "email") {
+              return reply.status(403).send({
+                error: "AccountTypeMismatch",
+                message:
+                  "You already have an account set up using email. Please try signing in with email and password.",
+              });
+            }
+          }
+        }
+        if (!user) {
+          return reply.status(404).send({
+            error: "AccountNotFound",
+            message: "No account found.",
+          });
+        }
 
-  //       if (user.deleted_at) {
-  //         return reply.status(410).send({
-  //           error: "AccountDeleted",
-  //           message: "Your account is deleted.",
-  //         })
-  //       }
-  //       const validation = await fastify.bcrypt.compare(request.body.password, user.password)
+        if (!user.is_active) {
+          return reply.status(403).send({
+            error: "AccountDeactivated",
+            message: "Your account is deactivated.",
+          });
+        }
 
-  //       if (!validation) {
-  //         return reply.status(400).send({
-  //           error: "InvalidCredentials",
-  //           message: "Mobile number or username is incorrect.",
-  //         });
-  //       }
+        if (user.deleted_at) {
+          return reply.status(410).send({
+            error: "AccountDeleted",
+            message: "Your account is deleted.",
+          });
+        }
 
-  //       let res = {}
-  //       res.id = user.id
-  //       res.email = user.email
-  //       res.role = user.roles.name
-  //       const token = fastify.jwt.sign(res)
+        let res = {};
+        res.id = user.id;
+        res.email = user.email;
+        res.role = user.roles.name;
+        const token = fastify.jwt.sign(res);
 
-  //       res.first_name = user.first_name
-  //       res.last_name = user.last_name
-  //       res.email = user.email
-  //       res.profile_picture_url = user.profile_picture_url
-  //       res.token = token
-  //       res.user_preferences = user.user_preferences
+        res.first_name = user.first_name;
+        res.last_name = user.last_name;
+        res.email = user.email;
+        res.profile_picture_url = user.profile_picture_url;
+        res.token = token;
+        res.user_preferences = user.user_preferences;
 
-  //       reply.send(res);
-  //     } catch (error) {
-  //       console.error(error);
-  //       reply.status(500).send({
-  //         error: "InternalServerError",
-  //         message: "An error occurred.",
-  //       });
-  //     } finally {
-  //       await fastify.prisma.$disconnect();
-  //     }
-  //   }
-  // );
+        reply.send(res);
+      } catch (error) {
+        console.error(error);
+        reply.status(500).send({
+          error: "InternalServerError",
+          message: "An error occurred.",
+        });
+      } finally {
+        await fastify.prisma.$disconnect();
+      }
+    }
+  );
 };
