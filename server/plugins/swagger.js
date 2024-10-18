@@ -11,7 +11,7 @@ module.exports = fp(async function (fastify, opts) {
         description: "API documentation for Fastify",
         version: pack.version,
       },
-      schemes: ["http"],
+      schemes: ["http","https"],
       tags: [
         { name: "Auth", description: "Auth related end-points" },
       ],
