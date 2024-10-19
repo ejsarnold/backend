@@ -23,7 +23,10 @@ const schema = {
     'SPACE_DIR',
     'GOOGLE_CLIENT_SECRET',
     'GOOGLE_CLIENT_ID',
-    'RESEND_API_KEY'
+    'RESEND_API_KEY',
+    'NOTIFY_SENDER_ID',
+    'NOTIFY_USER_ID',
+    'NOTIFY_API_KEY'
   ],
   properties: {
     ENV: {
@@ -77,6 +80,15 @@ const schema = {
       type: 'string'
     },
     RESEND_API_KEY: {
+      type: 'string'
+    },
+    NOTIFY_API_KEY: {
+      type: 'string'
+    },
+    NOTIFY_USER_ID: {
+      type: 'number'
+    },
+    NOTIFY_SENDER_ID: {
       type: 'string'
     },
   }

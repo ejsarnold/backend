@@ -8,19 +8,23 @@ module.exports = fp(async function (fastify, opts) {
 
   const email = {
     send: async (currentFastify, params) => {
-      const response = await resend.emails.send({
-        from: "Yappzy <no-reply@yappzy.com>",
-        to: [params.email],
-        subject: params.subject,
-        text: params.message,
-        // html: params.html || null,
-        // attachments: params.attachments || [],
-        // headers: params.headers || {},
-        // tags: params.tags || [],
-      });
-      console.log(response)
-      return { message: "Email sent successfully!", response };
-    },
+      try {
+        const response = await resend.emails.send({
+          from: "Yappzy <no-reply@yappzy.com>",
+          to: [params.email],
+          subject: params.subject,
+          text: params.message,
+          // html: params.html || null,
+          // attachments: params.attachments || [],
+          // headers: params.headers || {},
+          // tags: params.tags || [],
+        });
+        return response;
+      } catch (error) {
+        console.error("Error sending email:", error);
+      }
+    }
+    
   };
 
   fastify.decorate("email", email);

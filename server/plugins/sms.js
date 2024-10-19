@@ -5,24 +5,22 @@ const fp = require("fastify-plugin");
 module.exports = fp(async function (fastify, opts) {
   const sms = {
     send: async (currentFastify, params) => {
-      try {
-        console.log(params)
+        let sms;
         let messaging_option = params.messaging_option;
         if (messaging_option == "mobile") {
-          const ret = await fastify.uniClient.messages.send({
+        sms =  await fastify.axios.post("https://app.notify.lk/api/v1/send", {
+            api_key: fastify.config.NOTIFY_API_KEY,
+            user_id: fastify.config.NOTIFY_USER_ID,
+            sender_id: fastify.config.NOTIFY_SENDER_ID,
             to: params.phone_number,
-            text: params.message,
+            message: params.message,
           });
-          console.log(ret)
         } else {
-          await fastify.email.send(currentFastify, params);
+         sms = await fastify.email.send(currentFastify, params);
         }
-      } catch (error) {
-        return { message: error };
-      }
-
-      return { message: "Success!" };
+      return sms;
     },
+    
   };
   fastify.decorate("sms", sms);
 });

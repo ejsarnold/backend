@@ -88,7 +88,7 @@ module.exports = async function (fastify, opts) {
         // EOC
 
         //BOC: send OTP
-        await fastify.otp.send(
+      var sendOtp =  await fastify.otp.send(
           fastify,
           {
             email: request.body.email,
@@ -97,6 +97,9 @@ module.exports = async function (fastify, opts) {
           code
         );
         //EOC
+        if(sendOtp.error){
+          throw new Error(sendOtp.error)
+        }
 
         await fastify.prisma.otps.create({
           data: {
@@ -234,7 +237,7 @@ module.exports = async function (fastify, opts) {
           properties: {
             phone_number: {
               type: "string",
-              pattern: "^[+][0-9]{10,15}$",
+              pattern: "^[+]?[0-9]{10,15}$",
             },
             purpose: {
               type: "string",
@@ -298,32 +301,25 @@ module.exports = async function (fastify, opts) {
         // EOC
 
         //BOC: send OTP
-        //  await fastify.otp.send(
-        //   fastify,
-        //   {
-        //     phone_number: request.body.phone_number,
-        //     messaging_option: 'mobile',
-        //   },
-        //   code
-        // );
+       let sendOtp =  await fastify.otp.send(
+          fastify,
+          {
+            phone_number: request.body.phone_number,
+            messaging_option: 'mobile',
+          },
+          code
+        );
+        if(sendOtp.error){
+          throw new Error(sendOtp.error)
+        }
         //EOC
 
-        // const ret = await fastify.uniClient.messages.send({
-        //   to: request.body.phone_number,
-        //  // signature: 'Unimatrix',
-        //   templateId: 'pub_otp_en_ttl3',
-        //   templateData: {
-        //     code: '2048',
-        //     ttl:'5'
-        //   }
-        // });
-        // console.log('hiii',ret)
 
         await fastify.prisma.otps.create({
           data: {
             phone_number: request.body.phone_number,
             purpose: request.body.purpose,
-            code: "123456",
+            code:code,
             created_at: moment().toISOString(),
             modified_at: moment().toISOString(),
           },
@@ -365,7 +361,7 @@ module.exports = async function (fastify, opts) {
           properties: {
             phone_number: {
               type: "string",
-              pattern: "^[+][0-9]{10,15}$",
+              pattern: "^[+]?[0-9]{10,15}$",
             },
             otp: {
               type: "string",
@@ -473,7 +469,7 @@ module.exports = async function (fastify, opts) {
             },
             phone_number: {
               type: "string",
-              pattern: "^[+][0-9]{10,15}$",
+              pattern: "^[+]?[0-9]{10,15}$",
             },
             country_code: {
               type: "string",
