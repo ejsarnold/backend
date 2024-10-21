@@ -24,7 +24,7 @@ module.exports = async function (fastify, opts) {
           unique: "user_id",
           rows: [
             {
-              user_id: 1,
+              user_id: 2,
               language: "en",
             },
           ],

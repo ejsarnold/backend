@@ -24,11 +24,11 @@ exports.up = function (db) {
     },
     first_name: {
       type: "string",
-      notNull: true,
+      null: true,
     },
     last_name: {
       type: "string",
-      notNull: true,
+      null: true,
     },
     role_id: {
       type: "int",

@@ -58,8 +58,8 @@ model user_preferences {
 
 model users {
   id                       Int               @id @default(autoincrement())
-  first_name               String            @db.VarChar
-  last_name                String            @db.VarChar
+  first_name               String?           @db.VarChar
+  last_name                String?           @db.VarChar
   role_id                  Int
   password                 String?           @db.VarChar
   phone_number             String?           @db.VarChar
