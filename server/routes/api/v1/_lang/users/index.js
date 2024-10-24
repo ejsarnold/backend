@@ -64,8 +64,13 @@ module.exports = async function (fastify, opts) {
               profile_picture_url: true,
             },
           });
-          user.message = "Your account has been created succesfully."
-        reply.send(user);
+          let res = {};
+          let result = {}
+          res.message = "Your account has been created succesfully."
+          res.is_success = true
+          result.User = user
+          res.result = result
+        reply.send(res);
       } catch (error) {
         console.error(error);
         reply.status(500).send({
@@ -290,8 +295,13 @@ module.exports = async function (fastify, opts) {
             },
           });
         //
-        user.message = 'Your mobile number has been verified.'
-        reply.send(user);
+        let res = {};
+        let result = {}
+        res.message = 'Your mobile number has been verified.'
+        res.is_success = true
+        result.User = user
+        res.result = result
+      reply.send(res);
       } catch (error) {
         console.error(error);
         reply.status(500).send({

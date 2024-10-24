@@ -256,18 +256,24 @@ let user_preference = {}
           },
         });
         let res = {};
+        let userData = {}
+        let result = {}
         res.message = 'Your emaill address has been verified.'
-        res.id = user.id;
-        res.email = user.email;
-        res.role = user.roles.name;
-        const token = fastify.jwt.sign(res);
+        res.is_success = true
+        userData.id = user.id;
+        userData.email = user.email;
+        userData.role = user.roles.name;
+        const token = fastify.jwt.sign(userData);
 
-        res.first_name = user.first_name;
-        res.last_name = user.last_name;
-        res.email = user.email;
-        res.profile_picture_url = user.profile_picture_url;
-        res.token = token;
-        res.user_preferences = user_preference;
+        userData.first_name = user.first_name;
+        userData.last_name = user.last_name;
+        userData.email = user.email;
+        userData.profile_picture_url = user.profile_picture_url;
+        result.token = token;
+        userData.user_preferences = user_preference;
+
+        result.User = userData
+        res.result = result
 
         reply.send(res);
       } catch (error) {
@@ -586,17 +592,24 @@ let user_preference = {}
         }
 
         let res = {};
-        res.id = user.id;
-        res.email = user.email;
-        res.role = user.roles.name;
-        const token = fastify.jwt.sign(res);
+        let userData = {}
+        let result = {}
+        res.message = 'Your emaill address has been verified.'
+        res.is_success = true
+        userData.id = user.id;
+        userData.email = user.email;
+        userData.role = user.roles.name;
+        const token = fastify.jwt.sign(userData);
 
-        res.first_name = user.first_name;
-        res.last_name = user.last_name;
-        res.email = user.email;
-        res.profile_picture_url = user.profile_picture_url;
-        res.token = token;
-        res.user_preferences = user.user_preferences;
+        userData.first_name = user.first_name;
+        userData.last_name = user.last_name;
+        userData.email = user.email;
+        userData.profile_picture_url = user.profile_picture_url;
+        result.token = token;
+        userData.user_preferences = user_preference;
+
+        result.User = userData
+        res.result = result
 
         reply.send(res);
       } catch (error) {
